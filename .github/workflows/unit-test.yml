@@ -1,4 +1,4 @@
-name: Teste Build
+name: Teste Unitario
 
 on: 
   workflow_dispatch: #Disparo manual
