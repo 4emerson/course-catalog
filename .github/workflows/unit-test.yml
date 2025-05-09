@@ -1,0 +1,25 @@
+name: Teste Build
+
+on: 
+  workflow_dispatch: #Disparo manual
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      
+      - name: Config Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Build
+        run: docker build -t ${{ vars.CONTAINER_IMAGE }}:teste .
+
+
+      - name: Run Unit Test
+        run: | 
+          docker run --rm -v ${{ github.workspace}}:/course-catalog \
+            ${{ vars.CONTAINER_IMAGE }}:teste sh -c "nosetests --with-xunit --with-converage --cover-package=project test_users.py"
