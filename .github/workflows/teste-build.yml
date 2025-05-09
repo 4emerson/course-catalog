@@ -3,9 +3,6 @@ name: Teste Build
 on: 
   workflow_dispatch: #Disparo manual
 
-env:
-  CONTAINER_IMAGE: "${{ vars.CONTAINER_IMAGE }}"
-
 jobs:
   build-image-docker:
     runs-on: ubuntu-latest
@@ -17,4 +14,4 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Docker Build
-        run: docker build -t $CONTAINER_IMAGE:teste .
+        run: docker build -t ${{ vars.CONTAINER_IMAGE }}:teste .
