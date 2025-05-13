@@ -27,7 +27,7 @@ jobs:
 
       - name: Push da imagem para o Nexus
         run: | 
-          docker tag ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
+          docker tag ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }} ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
           docker push ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}
           docker push ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
 
