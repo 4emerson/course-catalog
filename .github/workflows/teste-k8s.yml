@@ -25,4 +25,4 @@ jobs:
           chmod 600 ~/.kube/config
 
       - name: Testar acesso ao cluster
-        run: kubectl get nodes --server=https://34.57.124.38:6443 --insecure-skip-tls-verify
+        run: kubectl get nodes --insecure-skip-tls-verify
