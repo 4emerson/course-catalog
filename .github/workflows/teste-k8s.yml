@@ -13,16 +13,12 @@ jobs:
 
       - name: Kuberntes CLI - kubectl
         uses: azure/setup-kubectl@v1
-        with:
-          version: 'v1.24.0'
         
-      - name: Criando ~/.kube
-        run: mkdir ~/.kube
-
       - name: Kubeconfig
-        env:
-          KUBECONFIG_K3S: ${{ secrets.KUBECONFIG }}
-        run: echo "${KUBECONFIG_K3S}" > ~/.kube/config
-      
+        run: |
+          mkdir ~/.kube
+          echo "${secrets.KUBECONFIG_K3S}" > ~/.kube/k3s.yaml
+          export KUBECONFIG=k3s.yaml
+
       - name: Listando nodes
-        run: kubectl get nodes --server=https://34.57.124.38:6443 --insecure-skip-tls-verify
+        run: kubectl get nodes --insecure-skip-tls-verify
