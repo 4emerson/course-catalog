@@ -15,10 +15,11 @@ jobs:
         uses: azure/setup-kubectl@v4
 
       - name: Configurar kubeconfig a partir do Secret
+        env:
+          KUBECONFIG_K3S: ${{ secrets.KUBECONFIG_K3S }}
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_K3S }}" > ~/.kube/config
-          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+          mkdir ~/.kube/
+          echo "$KUBECONFIG_K3S" | base64 -d > ~/.kube/config
 
       - name: Testar acesso ao cluster
         run: kubectl get nodes --insecure-skip-tls-verify
