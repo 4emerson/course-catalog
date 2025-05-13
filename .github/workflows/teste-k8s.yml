@@ -13,7 +13,9 @@ jobs:
 
       - name: Instalar kubectl
         uses: azure/setup-kubectl@v4
-
+        with:
+          version: 'v1.24.0'
+          
       - name: Configurar kubeconfig a partir do Secret
         env:
           KUBECONFIG_K3S: ${{ secrets.KUBECONFIG_K3S }}
