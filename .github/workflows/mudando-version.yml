@@ -1,0 +1,47 @@
+name: Mudando version
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+      
+      - name: Configurar Docker para aceitar registries inseguros
+        run: |
+          echo '{"insecure-registries": ["${{ secrets.NEXUS_REGISTRY }}"] }' | sudo tee /etc/docker/daemon.json
+          cat /etc/docker/daemon.json
+          sudo systemctl restart docker
+
+      - name: Login no Docker do Nexus
+        run: |
+          echo "${{ secrets.NEXUS_PASS }}" | docker login ${{ secrets.NEXUS_REGISTRY }} -u ${{ secrets.NEXUS_USER }} --password-stdin
+
+      - name: Build da imagem
+        run: docker build -t ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }} .
+
+      - name: Push da imagem para o Nexus
+        run: | 
+          docker tag ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }} ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
+          docker push ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}
+          docker push ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
+
+      - name: Atualizar deployment.yaml com nova tag da imagem
+        run: |
+          # Atualizar o arquivo deployment.yaml com a nova tag
+          sed -i "s|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:.*|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}|" manifest/web-deployment.yaml
+          sed -i "s|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:.*|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}|" manifest/web-initiate-db-deployment.yaml
+          
+          # Configurar o Git para fazer commit automaticamente
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Comitar a mudança
+          git commit -am "Atualiza a tag da imagem para ${{ github.run_number }}"
+          
+          # Push da mudança para o repositório GitOps
+          git push
