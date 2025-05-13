@@ -32,16 +32,17 @@ jobs:
 
       - name: Atualizar deployment.yaml com nova tag da imagem
         run: |
-          # Atualizar o arquivo deployment.yaml com a nova tag
           sed -i "s|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:.*|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}|" manifest/web-deployment.yaml
           sed -i "s|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:.*|image: ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}|" manifest/web-initiate-db-deployment.yaml
-          
-          # Configurar o Git para fazer commit automaticamente
+
+      - name: Autenticar no Git com token pessoal
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/4emerson/SEU_REPO.git
+
+      - name: Comitar e enviar mudanças
+        run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          
-          # Comitar a mudança
-          git commit -am "Atualiza a tag da imagem para ${{ github.run_number }}" --allow-empty
-          
-          # Push da mudança para o repositório GitOps
+          git add manifest/web-deployment.yaml manifest/web-initiate-db-deployment.yaml
+          git commit -m "Atualiza a tag da imagem para ${{ github.run_number }}" || echo "Nada para commitar"
           git push
