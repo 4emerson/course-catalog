@@ -11,14 +11,14 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v2
 
-      - name: Kuberntes CLI - kubectl
+      - name: Instalar kubectl
         uses: azure/setup-kubectl@v4
 
-      - name: Kubeconfig
+      - name: Criar kubeconfig
         run: |
-          mkdir ~/.kube
+          mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_K3S }}" > ~/.kube/k3s.yaml
-          echo "KUBECONFIG=$HOME/.kube/k3s.yaml" >> $GITHUB_ENV
+          echo "KUBECONFIG=$HOME/.kube/k3s.yaml" >> $GITHUB_ENV  # Exporta para os próximos steps
 
-      - name: Listando nodes
-        run: export KUBECONFIG=~/.kube/k3s.yaml && kubectl get nodes
+      - name: Listar nodes do cluster K3s
+        run: kubectl get nodes --insecure-skip-tls-verify
