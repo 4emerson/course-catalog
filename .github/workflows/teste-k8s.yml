@@ -25,4 +25,4 @@ jobs:
         run: echo "${KUBECONFIG_K3S}" > ~/.kube/config
       
       - name: Listando nodes
-        run: kubectl get nodes --insecure-skip-tls-verify
+        run: kubectl get nodes --server=https://34.57.124.38:6443 --insecure-skip-tls-verify
