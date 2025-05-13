@@ -14,11 +14,11 @@ jobs:
       - name: Instalar kubectl
         uses: azure/setup-kubectl@v4
 
-      - name: Criar kubeconfig
+      - name: Configurar kubeconfig a partir do Secret
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_K3S }}" > ~/.kube/k3s.yaml
-          echo "KUBECONFIG=$HOME/.kube/k3s.yaml" >> $GITHUB_ENV  # Exporta para os próximos steps
+          echo "${{ secrets.KUBECONFIG_K3S }}" > ~/.kube/config
+          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
-      - name: Listar nodes do cluster K3s
+      - name: Testar acesso ao cluster
         run: kubectl get nodes --insecure-skip-tls-verify
