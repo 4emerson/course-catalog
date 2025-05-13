@@ -37,7 +37,7 @@ jobs:
 
       - name: Autenticar no Git com token pessoal
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/4emerson/SEU_REPO.git
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/4emerson/course-catalog.git
 
       - name: Comitar e enviar mudanças
         run: |
