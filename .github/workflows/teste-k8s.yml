@@ -18,6 +18,7 @@ jobs:
         run: |
           mkdir ~/.kube
           echo "${{ secrets.KUBECONFIG_K3S }}" > ~/.kube/k3s.yaml
+          cat ~/.kube/k3s.yaml
           export KUBECONFIG=k3s.yaml
 
       - name: Listando nodes
