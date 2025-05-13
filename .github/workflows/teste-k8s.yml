@@ -15,13 +15,14 @@ jobs:
         uses: azure/setup-kubectl@v4
         with:
           version: 'v1.24.0'
-          
+
       - name: Configurar kubeconfig a partir do Secret
         env:
           KUBECONFIG_K3S: ${{ secrets.KUBECONFIG_K3S }}
         run: |
           mkdir ~/.kube/
           echo "$KUBECONFIG_K3S" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
 
       - name: Testar acesso ao cluster
-        run: kubectl get nodes --insecure-skip-tls-verify
+        run: kubectl get nodes --server=https://34.57.124.38:6443 --insecure-skip-tls-verify
