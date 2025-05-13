@@ -41,7 +41,7 @@ jobs:
           git config --global user.email "actions@github.com"
           
           # Comitar a mudança
-          git commit -am "Atualiza a tag da imagem para ${{ github.run_number }}"
+          git commit -am "Atualiza a tag da imagem para ${{ github.run_number }}" --allow-empty
           
           # Push da mudança para o repositório GitOps
           git push
