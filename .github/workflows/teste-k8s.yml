@@ -13,11 +13,11 @@ jobs:
 
       - name: Kuberntes CLI - kubectl
         uses: azure/setup-kubectl@v1
-        
+
       - name: Kubeconfig
         run: |
           mkdir ~/.kube
-          echo "${secrets.KUBECONFIG_K3S}" > ~/.kube/k3s.yaml
+          echo "${{ secrets.KUBECONFIG_K3S }}" > ~/.kube/k3s.yaml
           export KUBECONFIG=k3s.yaml
 
       - name: Listando nodes
