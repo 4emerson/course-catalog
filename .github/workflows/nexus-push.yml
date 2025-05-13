@@ -23,7 +23,7 @@ jobs:
           echo "${{ secrets.NEXUS_PASS }}" | docker login ${{ secrets.NEXUS_REGISTRY }} -u ${{ secrets.NEXUS_USER }} --password-stdin
 
       - name: Build da imagem
-        run: docker build -t ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}
+        run: docker build -t ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }} .
 
       - name: Push da imagem para o Nexus
         run: | 
