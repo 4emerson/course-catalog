@@ -1,0 +1,22 @@
+name: Nexus Push
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+      
+      - name: Configurar Docker para aceitar registries inseguros
+        run: |
+          echo '{"insecure-registries": ["${{ secrets.NEXUS_REGISTRY }}"] }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+
+      - name: Login no Docker do Nexus
+        run: |
+          echo "${{ secrets.NEXUS_PASS }}" | docker login -u ${{ secrets.NEXUS_USER }} ${{ secrets.NEXUS_REGISTRY } --password-stdin
