@@ -21,4 +21,4 @@ jobs:
           export KUBECONFIG=~/.kube/k3s.yaml
 
       - name: Listando nodes
-        run: kubectl get nodes
+        run: export KUBECONFIG=~/.kube/k3s.yaml && kubectl get nodes
