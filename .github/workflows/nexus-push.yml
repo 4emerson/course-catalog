@@ -19,4 +19,4 @@ jobs:
 
       - name: Login no Docker do Nexus
         run: |
-          echo "${{ secrets.NEXUS_PASS }}" | docker login -u ${{ secrets.NEXUS_USER }} ${{ secrets.NEXUS_REGISTRY } --password-stdin
+          echo "${{ secrets.NEXUS_PASS }}" | docker login -u ${{ secrets.NEXUS_USER }} ${{ secrets.NEXUS_REGISTRY }} --password-stdin
