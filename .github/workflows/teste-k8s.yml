@@ -1,0 +1,28 @@
+name: K8s - Teste de conexão
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-nodes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v2
+
+      - name: Kuberntes CLI - kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: 'v1.24.0'
+        
+      - name: Criando ~/.kube
+        run: mkdir ~/.kube
+
+      - name: Kubeconfig
+        env:
+          KUBECONFIG_K3S: ${{ secrets.KUBECONFIG }}
+        run: echo "${KUBECONFIG_K3S}" > ~/.kube/config
+      
+      - name: Listando nodes
+        run: kubectl get nodes --insecure-skip-tls-verify
