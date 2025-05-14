@@ -24,5 +24,5 @@ jobs:
           echo "$KUBECONFIG_K3S" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
-      - name: Testar acesso ao cluster
+      - name: Testar acesso ao cluster - K3s
         run: kubectl get nodes --insecure-skip-tls-verify
