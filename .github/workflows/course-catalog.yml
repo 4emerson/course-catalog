@@ -1,0 +1,106 @@
+name: Pipeline Course Catalog CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main 
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      
+      - name: Config Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Build
+        run: docker build -t ${{ vars.CONTAINER_IMAGE }}:teste .
+
+
+      - name: Run Unit Test
+        run: | 
+          docker run --rm -v ${{ github.workspace}}:/course-catalog \
+            ${{ vars.CONTAINER_IMAGE }}:teste sh -c "nosetests --with-xunit --with-coverage --cover-package=project test_users.py"
+
+  sonar-scan:
+    name: sonar-scan
+    runs-on: ubuntu-latest
+    needs: [unit-test]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        with:
+          check-quality-gate: false
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    neeeds: [sonar-scan]
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+      
+      - name: Configurar Docker para aceitar registries inseguros
+        run: |
+          echo '{"insecure-registries": ["${{ secrets.NEXUS_REGISTRY }}"] }' | sudo tee /etc/docker/daemon.json
+          cat /etc/docker/daemon.json
+          sudo systemctl restart docker
+
+      - name: Login no Docker do Nexus
+        run: |
+          echo "${{ secrets.NEXUS_PASS }}" | docker login ${{ secrets.NEXUS_REGISTRY }} -u ${{ secrets.NEXUS_USER }} --password-stdin
+
+      - name: Build da imagem
+        run: docker build -t ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }} .
+
+      - name: Push da imagem para o Nexus
+        run: | 
+          docker tag ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }} ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
+          docker push ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}
+          docker push ${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v2
+
+      - name: Instalar kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.24.0'
+
+      - name: Configurar kubeconfig a partir do Secret
+        env:
+          KUBECONFIG_K3S: ${{ secrets.KUBECONFIG_K3S }}
+        run: |
+          mkdir ~/.kube/
+          echo "$KUBECONFIG_K3S" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy no k3s - Homolog
+        run: | 
+          kubectl --insecure-skip-tls-verify -n homolog apply -f manifest
+          kubectl --insecure-skip-tls-verify -n homolog set image deployment/web  simplepythonflask=${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}
+          kubectl --insecure-skip-tls-verify -n homolog set image deployment/web-initiate-db  simple-python-flask-init-db=${{ secrets.NEXUS_REGISTRY }}/${{ secrets.CONTAINER_IMAGE }}:${{ github.run_number }}
