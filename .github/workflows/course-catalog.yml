@@ -53,7 +53,7 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    neeeds: [sonar-scan]
+    needs: [sonar-scan]
 
     steps:
       - name: Checkout do código
